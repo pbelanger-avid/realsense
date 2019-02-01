@@ -142,15 +142,16 @@ BaseRealSenseNode::BaseRealSenseNode(ros::NodeHandle& nodeHandle,
 
     // TODO: Improve the pipeline to accept decimation filter
     // TODO: Provide disparity map if requested
-    filters.emplace_back("Depth_to_Disparity", depth_to_disparity);
-    filters.emplace_back("Spatial", spat_filter);
-    filters.emplace_back("Temporal", temp_filter);
-    filters.emplace_back("Disparity_to_Depth", disparity_to_depth);
+    // TODO: Figure out why this was here @jake or @adel
+    // filters.emplace_back("Depth_to_Disparity", depth_to_disparity);
+    // filters.emplace_back("Spatial", spat_filter);
+    // filters.emplace_back("Temporal", temp_filter);
+    // filters.emplace_back("Disparity_to_Depth", disparity_to_depth);
 
-    filters[0].is_enabled = false;
-    filters[1].is_enabled = false;
-    filters[2].is_enabled = false;
-    filters[3].is_enabled = false;
+    // filters[0].is_enabled = false;
+    // filters[1].is_enabled = false;
+    // filters[2].is_enabled = false;
+    // filters[3].is_enabled = false;
 }
 
 void BaseRealSenseNode::toggleSensors(bool enabled)
@@ -705,13 +706,14 @@ void BaseRealSenseNode::publishAlignedDepthToOthers(rs2::frameset frames, const 
 
 void BaseRealSenseNode::filterFrame(rs2::frame& frame)
 {
-    for (auto&& filter : filters)
-    {
-        if (filter.is_enabled)
-        {
-            frame = filter.filter.process(frame);
-        }
-    }
+    //TODO: Readd filters? @jake @adel
+    // for (auto&& filter : filters)
+    // {
+    //     if (filter.is_enabled)
+    //     {
+    //         frame = filter.filter.process(frame);
+    //     }
+    // }
 }
 
 void BaseRealSenseNode::enable_devices()
