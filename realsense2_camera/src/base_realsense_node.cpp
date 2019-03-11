@@ -91,6 +91,8 @@ BaseRealSenseNode::BaseRealSenseNode(ros::NodeHandle& nodeHandle,
     filters[1].is_enabled = false;
     filters[2].is_enabled = false;
     filters[3].is_enabled = false;
+
+    _prev_camera_time_stamp = 0;
 }
 
 void BaseRealSenseNode::publishTopics()
@@ -115,8 +117,11 @@ void BaseRealSenseNode::getParameters()
     _pnh.param("align_depth", _align_depth, ALIGN_DEPTH);
     _pnh.param("enable_pointcloud", _pointcloud, POINTCLOUD);
     _pnh.param("enable_sync", _sync_frames, SYNC_FRAMES);
+    _pnh.param("enable_ros_time", _use_ros_time, USE_ROS_TIME);
     if (_pointcloud || _align_depth)
         _sync_frames = true;
+    if (_sync_frames)
+      _use_ros_time = true;
 
     _pnh.param("json_file_path", _json_file_path, std::string(""));
 
@@ -604,7 +609,7 @@ void BaseRealSenseNode::setupStreams()
                 // We compute a ROS timestamp which is based on an initial ROS time at point of first frame,
                 // and the incremental timestamp from the camera.
                 // In sync mode the timestamp is based on ROS time
-                if (false == _intialize_time_base)
+                if ((false == _intialize_time_base) || (_prev_camera_time_stamp > frame.get_timestamp()))
                 {
                     if (RS2_TIMESTAMP_DOMAIN_SYSTEM_TIME == frame.get_frame_timestamp_domain())
                         ROS_WARN("Frame metadata isn't available! (frame_timestamp_domain = RS2_TIMESTAMP_DOMAIN_SYSTEM_TIME)");
@@ -613,12 +618,14 @@ void BaseRealSenseNode::setupStreams()
                     _ros_time_base = ros::Time::now();
                     _camera_time_base = frame.get_timestamp();
                 }
+                _prev_camera_time_stamp = frame.get_timestamp();
 
                 ros::Time t;
-                if (_sync_frames)
+                if (_use_ros_time)
                     t = ros::Time::now();
                 else
                     t = ros::Time(_ros_time_base.toSec()+ (/*ms*/ frame.get_timestamp() - /*ms*/ _camera_time_base) / /*ms to seconds*/ 1000);
+
 
                 std::map<stream_index_pair, bool> is_frame_arrived(_is_frame_arrived);
                 std::vector<rs2::frame> frames;

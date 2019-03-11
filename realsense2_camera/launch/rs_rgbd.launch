@@ -77,6 +77,7 @@ Processing enabled by this node:
 
   <arg name="enable_pointcloud"   default="false"/>
   <arg name="enable_sync"         default="true"/>
+  <arg name="enable_ros_time"     default="false"/>
   <arg name="align_depth"         default="true"/>
 
   <!-- rgbd_launch specific arguments -->
@@ -117,6 +118,7 @@ Processing enabled by this node:
 
       <arg name="enable_pointcloud"        value="$(arg enable_pointcloud)"/>
       <arg name="enable_sync"              value="$(arg enable_sync)"/>
+      <arg name="enable_ros_time"          value="$(arg enable_ros_time)"/>
       <arg name="align_depth"              value="$(arg align_depth)"/>
 
       <arg name="fisheye_width"            value="$(arg fisheye_width)"/>
