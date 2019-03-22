@@ -193,6 +193,7 @@ namespace realsense2_camera
         std::map<stream_index_pair, sensor_msgs::CameraInfo> _camera_info;
         bool _intialize_time_base;
         double _camera_time_base;
+        double _prev_camera_time_stamp;
         std::map<stream_index_pair, std::vector<rs2::stream_profile>> _enabled_profiles;
 
         ros::Publisher _pointcloud_xyz_publisher;
@@ -201,6 +202,7 @@ namespace realsense2_camera
         bool _align_depth;
         bool _sync_frames;
         bool _pointcloud;
+        bool _use_ros_time;
         rs2::asynchronous_syncer _syncer;
 
         std::map<stream_index_pair, cv::Mat> _depth_aligned_image;

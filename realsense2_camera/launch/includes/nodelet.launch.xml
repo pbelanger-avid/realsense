@@ -42,6 +42,7 @@
 
   <arg name="enable_pointcloud"   default="false"/>
   <arg name="enable_sync"         default="false"/>
+  <arg name="enable_ros_time"     default="false"/>
   <arg name="align_depth"         default="false"/>
 
   <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" output="screen"/>
@@ -52,6 +53,7 @@
 
     <param name="enable_pointcloud"        type="bool" value="$(arg enable_pointcloud)"/>
     <param name="enable_sync"              type="bool" value="$(arg enable_sync)"/>
+    <param name="enable_ros_time"          type="bool" value="$(arg enable_ros_time)"/>
     <param name="align_depth"              type="bool" value="$(arg align_depth)"/>
 
     <param name="fisheye_width"            type="int"  value="$(arg fisheye_width)"/>
