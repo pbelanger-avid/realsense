@@ -9,6 +9,7 @@
 #include <realsense2_camera/rs415_paramsConfig.h>
 #include <realsense2_camera/rs435_paramsConfig.h>
 
+#include <std_srvs/SetBool.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 #include <diagnostic_updater/update_functions.h>
 #include <atomic>
@@ -119,8 +120,10 @@ namespace realsense2_camera
 
         static std::string getNamespaceStr();
         void getParameters();
+        bool enableStreams(std_srvs::SetBool::Request  &req, std_srvs::SetBool::Response &res);
         void setupDevice();
         void setupPublishers();
+        void setupServices();
         void enable_devices();
         void setupStreams();
         void updateStreamCalibData(const rs2::video_stream_profile& video_profile);
@@ -198,6 +201,7 @@ namespace realsense2_camera
 
         ros::Publisher _pointcloud_xyz_publisher;
         ros::Publisher _pointcloud_xyzrgb_publisher;
+        ros::ServiceServer _enable_streams_service;
         ros::Time _ros_time_base;
         bool _align_depth;
         bool _sync_frames;
@@ -214,6 +218,8 @@ namespace realsense2_camera
         std::map<stream_index_pair, std::string> _depth_aligned_frame_id;
         std::map<stream_index_pair, ros::Publisher> _depth_to_other_extrinsics_publishers;
         std::map<stream_index_pair, rs2_extrinsics> _depth_to_other_extrinsics;
+
+        std::function<void(rs2::frame)> _frame_callback;
 
         std::map<stream_index_pair, bool> _is_frame_arrived;
         const std::string _namespace;
