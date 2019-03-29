@@ -100,6 +100,7 @@ void BaseRealSenseNode::publishTopics()
     getParameters();
     setupDevice();
     setupPublishers();
+    setupServices();
     setupStreams();
     publishStaticTransforms();
     ROS_INFO_STREAM("RealSense Node Is Up!");
@@ -108,6 +109,51 @@ void BaseRealSenseNode::publishTopics()
 void BaseRealSenseNode::registerDynamicReconfigCb()
 {
     ROS_INFO("Dynamic reconfig parameters is not implemented in the base node.");
+}
+
+bool BaseRealSenseNode::enableStreams(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res)
+{
+    res.success = true;
+    for (auto& streams : IMAGE_STREAMS)
+    {
+        auto& sens = _sensors[streams.front()];
+        if (sens)
+        {
+            if (req.data)
+            {
+                try
+                {
+                    if (_sync_frames)
+                    {
+                        sens.start(_syncer);
+                    }
+                    else
+                    {
+                        sens.start(_frame_callback);
+                    }
+                }
+                catch (const rs2::error& e)
+                {
+                    res.message += std::string("Failed to start stream:  ") + e.what() + '\n';
+                    res.success = false;
+                }
+            }
+            else
+            {
+                try
+                {
+                    sens.stop();
+                }
+                catch (const rs2::error& e)
+                {
+                    res.message += std::string("Failed to stop stream:  ") + e.what() + '\n';
+                    res.success = false;
+                }
+            }
+        }
+    }
+
+    return true;
 }
 
 void BaseRealSenseNode::getParameters()
@@ -313,6 +359,12 @@ void BaseRealSenseNode::TemperatureUpdate(diagnostic_updater::DiagnosticStatusWr
     }
 
 
+}
+
+void BaseRealSenseNode::setupServices()
+{
+  ROS_INFO("setupServices...");
+  _enable_streams_service = _pnh.advertiseService("enable_streams", &BaseRealSenseNode::enableStreams, this);
 }
 
 void BaseRealSenseNode::setupPublishers()
@@ -603,7 +655,7 @@ void BaseRealSenseNode::setupStreams()
             }
         }
 
-        auto frame_callback = [this](rs2::frame frame)
+        _frame_callback = [this](rs2::frame frame)
         {
             try{
                 // We compute a ROS timestamp which is based on an initial ROS time at point of first frame,
@@ -713,7 +765,7 @@ void BaseRealSenseNode::setupStreams()
             {
                 ROS_ERROR_STREAM("An error has occurred during frame callback: " << ex.what());
             }
-        }; // frame_callback
+        }; // _frame_callback
 
         // Streaming IMAGES
         for (auto& streams : IMAGE_STREAMS)
@@ -747,14 +799,14 @@ void BaseRealSenseNode::setupStreams()
                 }
                 else
                 {
-                    sens.start(frame_callback);
+                    sens.start(_frame_callback);
                 }
             }
         }//end for
 
         if (_sync_frames)
         {
-            _syncer.start(frame_callback);
+            _syncer.start(_frame_callback);
         }
 
         // Streaming HID
