@@ -8,6 +8,8 @@
 #include <iostream>
 #include <map>
 
+#include <boost/interprocess/sync/named_mutex.hpp>
+
 using namespace realsense2_camera;
 
 #define REALSENSE_ROS_EMBEDDED_VERSION_STR (VAR_ARG_STRING(VERSION: REALSENSE_ROS_MAJOR_VERSION.REALSENSE_ROS_MINOR_VERSION.REALSENSE_ROS_PATCH_VERSION))
@@ -99,7 +101,11 @@ void RealSenseNodeFactory::onInit()
 		}
         else
         {
+                        namespace bi = boost::interprocess;
+                        bi::named_mutex usb_mutex{bi::open_or_create, "usb_mutex"};
+                        usb_mutex.lock();
 			auto list = _ctx.query_devices();
+                        usb_mutex.unlock();
 			if (0 == list.size())
 			{
 				ROS_ERROR("No RealSense devices were found! Terminating RealSense Node...");
