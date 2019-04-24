@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../include/base_realsense_node.h"
+#include <realsense2_camera/realsense_node.h>
 #include <realsense2_camera/rs415_paramsConfig.h>
 
 namespace realsense2_camera
@@ -31,18 +31,14 @@ namespace realsense2_camera
         rs415_param_count
     };
 
-    class RS415Node : public BaseD400Node
+    class RS415ParamManager : public D400ParamManager
     {
     public:
-        RS415Node(ros::NodeHandle& nodeHandle,
-                  ros::NodeHandle& privateNodeHandle,
-                  rs2::device dev, const std::string& serial_no);
-
-        virtual void registerDynamicReconfigCb() override;
+        virtual void registerDynamicReconfigCb(RealSenseNode *node_ptr) override;
 
     private:
-        void callback(rs415_paramsConfig &config, uint32_t level);
-        void setParam(rs415_paramsConfig &config, rs415_param param);
+        void callback(RealSenseNode* node_ptr, rs415_paramsConfig &config, uint32_t level);
+        void setParam(RealSenseNode* node_ptr, rs415_paramsConfig &config, rs415_param param);
 
         dynamic_reconfigure::Server<rs415_paramsConfig> _server;
         dynamic_reconfigure::Server<rs415_paramsConfig>::CallbackType _f;
