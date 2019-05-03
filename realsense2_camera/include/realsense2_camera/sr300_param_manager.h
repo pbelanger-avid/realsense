@@ -42,7 +42,7 @@ namespace realsense2_camera
         void callback(RealSenseNode* node_ptr, sr300_paramsConfig &config, uint32_t level);
         void setParam(RealSenseNode* node_ptr, sr300_paramsConfig &config, sr300_param param);
 
-        dynamic_reconfigure::Server<sr300_paramsConfig> _server;
+        std::shared_ptr<dynamic_reconfigure::Server<sr300_paramsConfig>> _server;
         dynamic_reconfigure::Server<sr300_paramsConfig>::CallbackType _f;
     };
 }

@@ -21,8 +21,8 @@ std::string RealSenseNode::getNamespaceStr()
     return ns;
 }
 
-RealSenseNode::RealSenseNode(ros::NodeHandle& nodeHandle,
-                                     ros::NodeHandle& privateNodeHandle) :
+RealSenseNode::RealSenseNode(const ros::NodeHandle &nodeHandle,
+                                     const ros::NodeHandle &privateNodeHandle) :
     _node_handle(nodeHandle),
     _pnh(privateNodeHandle),
     _json_file_path(""),
@@ -1660,56 +1660,6 @@ void D400ParamManager::callback(RealSenseNode* node_ptr,base_d400_paramsConfig &
 void D400ParamManager::setOption(RealSenseNode* node_ptr,stream_index_pair sip, rs2_option opt, float val)
 {
     node_ptr->_sensors[sip].set_option(opt, val);
-}
-
-void D400ParamManager::setParam(RealSenseNode* node_ptr,rs435_paramsConfig &config, base_depth_param param)
-{
-    base_d400_paramsConfig base_config;
-    base_config.base_depth_gain = config.rs435_depth_gain;
-    base_config.base_depth_enable_auto_exposure = config.rs435_depth_enable_auto_exposure;
-    base_config.base_depth_visual_preset = config.rs435_depth_visual_preset;
-    base_config.base_depth_frames_queue_size = config.rs435_depth_frames_queue_size;
-    base_config.base_depth_error_polling_enabled = config.rs435_depth_error_polling_enabled;
-    base_config.base_depth_output_trigger_enabled = config.rs435_depth_output_trigger_enabled;
-    base_config.base_depth_units = config.rs435_depth_units;
-    base_config.base_JSON_file_path = config.rs435_JSON_file_path;
-    base_config.base_enable_depth_to_disparity_filter = config.rs435_enable_depth_to_disparity_filter;
-    base_config.base_enable_spatial_filter = config.rs435_enable_spatial_filter;
-    base_config.base_enable_temporal_filter = config.rs435_enable_temporal_filter;
-    base_config.base_enable_disparity_to_depth_filter = config.rs435_enable_disparity_to_depth_filter;
-    base_config.base_spatial_filter_magnitude = config.rs435_spatial_filter_magnitude;
-    base_config.base_spatial_filter_smooth_alpha = config.rs435_spatial_filter_smooth_alpha;
-    base_config.base_spatial_filter_smooth_delta = config.rs435_spatial_filter_smooth_delta;
-    base_config.base_spatial_filter_holes_fill = config.rs435_spatial_filter_holes_fill;
-    base_config.base_temporal_filter_smooth_alpha = config.rs435_temporal_filter_smooth_alpha;
-    base_config.base_temporal_filter_smooth_delta = config.rs435_temporal_filter_smooth_delta;
-    base_config.base_temporal_filter_holes_fill = config.rs435_temporal_filter_holes_fill;
-    setParam(node_ptr, base_config, param);
-}
-
-void D400ParamManager::setParam(RealSenseNode* node_ptr, rs415_paramsConfig &config, base_depth_param param)
-{
-    base_d400_paramsConfig base_config;
-    base_config.base_depth_gain = config.rs415_depth_gain;
-    base_config.base_depth_enable_auto_exposure = config.rs415_depth_enable_auto_exposure;
-    base_config.base_depth_visual_preset = config.rs415_depth_visual_preset;
-    base_config.base_depth_frames_queue_size = config.rs415_depth_frames_queue_size;
-    base_config.base_depth_error_polling_enabled = config.rs415_depth_error_polling_enabled;
-    base_config.base_depth_output_trigger_enabled = config.rs415_depth_output_trigger_enabled;
-    base_config.base_depth_units = config.rs415_depth_units;
-    base_config.base_JSON_file_path = config.rs415_JSON_file_path;
-    base_config.base_enable_depth_to_disparity_filter = config.rs415_enable_depth_to_disparity_filter;
-    base_config.base_enable_spatial_filter = config.rs415_enable_spatial_filter;
-    base_config.base_enable_temporal_filter = config.rs415_enable_temporal_filter;
-    base_config.base_enable_disparity_to_depth_filter = config.rs415_enable_disparity_to_depth_filter;
-    base_config.base_spatial_filter_magnitude = config.rs415_spatial_filter_magnitude;
-    base_config.base_spatial_filter_smooth_alpha = config.rs415_spatial_filter_smooth_alpha;
-    base_config.base_spatial_filter_smooth_delta = config.rs415_spatial_filter_smooth_delta;
-    base_config.base_spatial_filter_holes_fill = config.rs415_spatial_filter_holes_fill;
-    base_config.base_temporal_filter_smooth_alpha = config.rs415_temporal_filter_smooth_alpha;
-    base_config.base_temporal_filter_smooth_delta = config.rs415_temporal_filter_smooth_delta;
-    base_config.base_temporal_filter_holes_fill = config.rs415_temporal_filter_holes_fill;
-    setParam(node_ptr, base_config, param);
 }
 
 void D400ParamManager::setParam(RealSenseNode* node_ptr,base_d400_paramsConfig &config, base_depth_param param)

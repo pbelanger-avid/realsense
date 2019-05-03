@@ -5,8 +5,9 @@ using namespace realsense2_camera;
 
 void RS435ParamManager::registerDynamicReconfigCb(RealSenseNode *node_ptr)
 {
+     _server = std::make_shared<dynamic_reconfigure::Server<rs435_paramsConfig>>();
     _f = boost::bind(&RS435ParamManager::callback, this, node_ptr, _1, _2);
-    _server.setCallback(_f);
+    _server->setCallback(_f);
 }
 
 void RS435ParamManager::setParam(RealSenseNode* node_ptr, rs435_paramsConfig &config, rs435_param param)

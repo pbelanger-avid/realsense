@@ -1,11 +1,13 @@
 #include <realsense2_camera/rs415_param_manager.h>
+#include <realsense2_camera/rs415_paramsConfig.h>
 
 using namespace realsense2_camera;
 
 void RS415ParamManager::registerDynamicReconfigCb(RealSenseNode *node_ptr)
 {
+    _server = std::make_shared<dynamic_reconfigure::Server<rs415_paramsConfig>>();
     _f = boost::bind(&RS415ParamManager::callback, this, node_ptr, _1, _2);
-    _server.setCallback(_f);
+    _server->setCallback(_f);
 }
 
 

@@ -31,7 +31,7 @@ namespace realsense2_camera
         rs415_param_count
     };
 
-    class RS415ParamManager : public D400ParamManager
+    class RS415ParamManager : public RealSenseParamManager
     {
     public:
         virtual void registerDynamicReconfigCb(RealSenseNode *node_ptr) override;
@@ -40,7 +40,7 @@ namespace realsense2_camera
         void callback(RealSenseNode* node_ptr, rs415_paramsConfig &config, uint32_t level);
         void setParam(RealSenseNode* node_ptr, rs415_paramsConfig &config, rs415_param param);
 
-        dynamic_reconfigure::Server<rs415_paramsConfig> _server;
+        std::shared_ptr<dynamic_reconfigure::Server<rs415_paramsConfig>> _server;
         dynamic_reconfigure::Server<rs415_paramsConfig>::CallbackType _f;
     };
 }

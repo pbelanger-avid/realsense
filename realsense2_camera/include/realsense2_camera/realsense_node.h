@@ -109,7 +109,7 @@ namespace realsense2_camera
     class RealSenseNode
     {
     public:
-        RealSenseNode(ros::NodeHandle& nodeHandle, ros::NodeHandle& privateNodeHandle);
+        RealSenseNode(const ros::NodeHandle& nodeHandle, const ros::NodeHandle& privateNodeHandle);
 
         void resetNode();
         void getDevice();
@@ -292,10 +292,6 @@ namespace realsense2_camera
     {
     public:
         virtual void registerDynamicReconfigCb(RealSenseNode *node_ptr) override;
-
-    protected:
-        void setParam(RealSenseNode* node_ptr, rs415_paramsConfig &config, base_depth_param param);
-        void setParam(RealSenseNode* node_ptr, rs435_paramsConfig &config, base_depth_param param);
 
     private:
         void callback(RealSenseNode* node_ptr,base_d400_paramsConfig &config, uint32_t level);
