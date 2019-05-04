@@ -85,9 +85,7 @@ catkin_package(
 add_library(${PROJECT_NAME}
     src/realsense_nodelet.cpp
     src/realsense_node.cpp
-    src/rs415_param_manager.cpp
-    src/rs435_param_manager.cpp
-    src/sr300_param_manager.cpp
+    src/param_manager.cpp
     )
 
 add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_generate_messages_cpp)

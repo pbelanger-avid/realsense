@@ -1,8 +1,6 @@
 #include <realsense2_camera/realsense_node.h>
-#include <realsense2_camera/sr300_param_manager.h>
+#include <realsense2_camera/param_manager.h>
 #include <boost/interprocess/sync/named_mutex.hpp>
-#include <realsense2_camera/rs415_param_manager.h>
-#include <realsense2_camera/rs435_param_manager.h>
 
 using namespace realsense2_camera;
 
@@ -113,56 +111,19 @@ RealSenseNode::RealSenseNode(const ros::NodeHandle &nodeHandle,
 void RealSenseNode::createParamsManager() {
     auto pid_str = _dev.get_info(RS2_CAMERA_INFO_PRODUCT_ID);
     uint16_t pid;
-                std::stringstream ss;
-                ss << std::hex << pid_str;
-                ss >> pid;
-                ROS_WARN_STREAM ("pid " << pid);
-
-                switch(pid)
-                {
-                case SR300_PID:
-                    _params = std::unique_ptr<SR300ParamManager>(new SR300ParamManager);
-                    break;
-                case RS400_PID:
-                   _params = std::unique_ptr<D400ParamManager>(new D400ParamManager);
-                    break;
-                case RS405_PID:
-                    _params = std::unique_ptr<D400ParamManager>(new D400ParamManager);
-                    break;
-                case RS410_PID:
-                case RS460_PID:
-                    _params = std::unique_ptr<D400ParamManager>(new D400ParamManager);
-                    break;
-                case RS415_PID:
-                    _params = std::unique_ptr<RS415ParamManager>(new RS415ParamManager);
-                    break;
-                case RS420_PID:
-                    _params = std::unique_ptr<D400ParamManager>(new D400ParamManager);
-                    break;
-                case RS420_MM_PID:
-                    _params = std::unique_ptr<D400ParamManager>(new D400ParamManager);
-                    break;
-                case RS430_PID:
-                    _params = std::unique_ptr<D400ParamManager>(new D400ParamManager);
-                    break;
-                case RS430_MM_PID:
-                    _params = std::unique_ptr<D400ParamManager>(new D400ParamManager);
-                    break;
-                case RS430_MM_RGB_PID:
-                    _params = std::unique_ptr<D400ParamManager>(new D400ParamManager);
-                    break;
-                case RS435_RGB_PID:
-                    _params = std::unique_ptr<RS435ParamManager>(new RS435ParamManager);
-                    break;
-                case RS_USB2_PID:
-                    _params = std::unique_ptr<D400ParamManager>(new D400ParamManager);
-                    break;
-                default:
-                    ROS_FATAL_STREAM("Unsupported device!" << " Product ID: 0x" << pid_str);
-                    ros::Duration(20).sleep();
-                    resetNode();
-                }
-
+    std::stringstream ss;
+    ss << std::hex << pid_str;
+    ss >> pid;
+    try
+    {
+      _params = param_makers.at(pid)();
+    }
+    catch (...)
+    {
+       ROS_FATAL_STREAM("Unsupported device!" << " Product ID: 0x" << pid_str);
+       ros::Duration(20).sleep();
+       resetNode();
+    }
 }
 
 void RealSenseNode::resetNode() {
@@ -1639,140 +1600,6 @@ bool RealSenseNode::getEnabledProfile(const stream_index_pair& stream_index, rs2
 
 
 
-void D400ParamManager::callback(RealSenseNode* node_ptr,base_d400_paramsConfig &config, uint32_t level)
-{
-    ROS_DEBUG_STREAM("D400 - Level: " << level);
-
-    if (node_ptr->set_default_dynamic_reconfig_values == level)
-    {
-        for (int i = 1 ; i < base_depth_count ; ++i)
-        {
-            ROS_DEBUG_STREAM("base_depth_param = " << i);
-            setParam(node_ptr, config ,(base_depth_param)i);
-        }
-    }
-    else
-    {
-        setParam(node_ptr, config, (base_depth_param)level);
-    }
-}
-
-void D400ParamManager::setOption(RealSenseNode* node_ptr,stream_index_pair sip, rs2_option opt, float val)
-{
-    node_ptr->_sensors[sip].set_option(opt, val);
-}
-
-void D400ParamManager::setParam(RealSenseNode* node_ptr,base_d400_paramsConfig &config, base_depth_param param)
-{
-    // W/O for zero param
-    if (0 == param)
-        return;
-
-    switch (param) {
-    case base_depth_gain:
-        ROS_DEBUG_STREAM("base_depth_gain: " << config.base_depth_gain);
-        setOption(node_ptr, RealSenseNode::DEPTH, RS2_OPTION_GAIN, config.base_depth_gain);
-        break;
-    case base_depth_enable_auto_exposure:
-        ROS_DEBUG_STREAM("base_depth_enable_auto_exposure: " << config.base_depth_enable_auto_exposure);
-        setOption(node_ptr, RealSenseNode::DEPTH, RS2_OPTION_ENABLE_AUTO_EXPOSURE, config.base_depth_enable_auto_exposure);
-        break;
-    case base_depth_visual_preset:
-        ROS_DEBUG_STREAM("base_depth_visual_preset: " << config.base_depth_visual_preset);
-        setOption(node_ptr, RealSenseNode::DEPTH, RS2_OPTION_VISUAL_PRESET, config.base_depth_visual_preset);
-        break;
-    case base_depth_frames_queue_size:
-        ROS_DEBUG_STREAM("base_depth_frames_queue_size: " << config.base_depth_frames_queue_size);
-        setOption(node_ptr, RealSenseNode::DEPTH, RS2_OPTION_FRAMES_QUEUE_SIZE, config.base_depth_frames_queue_size);
-        break;
-    case base_depth_error_polling_enabled:
-        ROS_DEBUG_STREAM("base_depth_error_polling_enabled: " << config.base_depth_error_polling_enabled);
-        setOption(node_ptr, RealSenseNode::DEPTH, RS2_OPTION_ERROR_POLLING_ENABLED, config.base_depth_error_polling_enabled);
-        break;
-    case base_depth_output_trigger_enabled:
-        ROS_DEBUG_STREAM("base_depth_output_trigger_enabled: " << config.base_depth_output_trigger_enabled);
-        setOption(node_ptr, RealSenseNode::DEPTH, RS2_OPTION_OUTPUT_TRIGGER_ENABLED, config.base_depth_output_trigger_enabled);
-        break;
-    case base_depth_units:
-        break;
-    case base_JSON_file_path:
-    {
-        ROS_DEBUG_STREAM("base_JSON_file_path: " << config.base_JSON_file_path);
-        auto adv_dev = node_ptr->_dev.as<rs400::advanced_mode>();
-        if (!adv_dev)
-        {
-            ROS_WARN_STREAM("Device doesn't support Advanced Mode!");
-            return;
-        }
-        if (!config.base_JSON_file_path.empty())
-        {
-            std::ifstream in(config.base_JSON_file_path);
-            if (!in.is_open())
-            {
-                ROS_WARN_STREAM("JSON file provided doesn't exist!");
-                return;
-            }
-
-            adv_dev.load_json(config.base_JSON_file_path);
-        }
-        break;
-    }
-    case base_enable_depth_to_disparity_filter:
-        ROS_DEBUG_STREAM("base_enable_depth_to_disparity_filter: " << config.base_enable_depth_to_disparity_filter);
-        node_ptr->filters[DEPTH_TO_DISPARITY].is_enabled = config.base_enable_depth_to_disparity_filter;
-        break;
-    case base_enable_spatial_filter:
-        ROS_DEBUG_STREAM("base_enable_spatial_filter: " << config.base_enable_spatial_filter);
-        node_ptr->filters[SPATIAL].is_enabled = config.base_enable_spatial_filter;
-        break;
-    case base_enable_temporal_filter:
-        ROS_DEBUG_STREAM("base_enable_temporal_filter: " << config.base_enable_temporal_filter);
-        node_ptr->filters[TEMPORAL].is_enabled = config.base_enable_temporal_filter;
-        break;
-    case base_enable_disparity_to_depth_filter:
-        ROS_DEBUG_STREAM("base_enable_disparity_to_depth_filter: " << config.base_enable_disparity_to_depth_filter);
-        node_ptr->filters[DISPARITY_TO_DEPTH].is_enabled = config.base_enable_disparity_to_depth_filter;
-        break;
-    case base_spatial_filter_magnitude:
-        ROS_DEBUG_STREAM("base_spatial_filter_magnitude: " << config.base_spatial_filter_magnitude);
-        node_ptr->filters[SPATIAL].filter.set_option(RS2_OPTION_FILTER_MAGNITUDE, config.base_spatial_filter_magnitude);
-        break;
-    case base_spatial_filter_smooth_alpha:
-        ROS_DEBUG_STREAM("base_spatial_filter_smooth_alpha: " << config.base_spatial_filter_smooth_alpha);
-        node_ptr->filters[SPATIAL].filter.set_option(RS2_OPTION_FILTER_SMOOTH_ALPHA, config.base_spatial_filter_smooth_alpha);
-        break;
-    case base_spatial_filter_smooth_delta:
-        ROS_DEBUG_STREAM("base_spatial_filter_smooth_delta: " << config.base_spatial_filter_smooth_delta);
-        node_ptr->filters[SPATIAL].filter.set_option(RS2_OPTION_FILTER_SMOOTH_DELTA, config.base_spatial_filter_smooth_delta);
-        break;
-    case base_spatial_filter_holes_fill:
-        ROS_DEBUG_STREAM("base_spatial_filter_holes_fill: " << config.base_spatial_filter_holes_fill);
-        node_ptr->filters[SPATIAL].filter.set_option(RS2_OPTION_HOLES_FILL, config.base_spatial_filter_holes_fill);
-        break;
-    case base_temporal_filter_smooth_alpha:
-        ROS_DEBUG_STREAM("base_temporal_filter_smooth_alpha: " << config.base_temporal_filter_smooth_alpha);
-        node_ptr->filters[TEMPORAL].filter.set_option(RS2_OPTION_FILTER_SMOOTH_ALPHA, config.base_temporal_filter_smooth_alpha);
-        break;
-    case base_temporal_filter_smooth_delta:
-        ROS_DEBUG_STREAM("base_temporal_filter_smooth_delta: " << config.base_temporal_filter_smooth_delta);
-        node_ptr->filters[TEMPORAL].filter.set_option(RS2_OPTION_FILTER_SMOOTH_DELTA, config.base_temporal_filter_smooth_delta);
-        break;
-    case base_temporal_filter_holes_fill:
-        ROS_DEBUG_STREAM("base_temporal_filter_holes_fill: " << config.base_temporal_filter_holes_fill);
-        node_ptr->filters[TEMPORAL].filter.set_option(RS2_OPTION_HOLES_FILL, config.base_temporal_filter_holes_fill);
-        break;
-    default:
-        ROS_WARN_STREAM("Unrecognized D400 param (" << param << ")");
-        break;
-    }
-}
-
-void D400ParamManager::registerDynamicReconfigCb(RealSenseNode* node_ptr)
-{
-    _server = std::make_shared<dynamic_reconfigure::Server<base_d400_paramsConfig>>();
-    _f = boost::bind(&D400ParamManager::callback, this, node_ptr, _1, _2);
-    _server->setCallback(_f);
-}
 
 /**
 Constructor for filter_options, takes a name and a filter.

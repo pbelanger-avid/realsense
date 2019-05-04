@@ -1,66 +1,48 @@
 // License: Apache 2.0. See LICENSE file in root directory.
 // Copyright(c) 2018 Intel Corporation. All Rights Reserved
 
-#pragma once
+#ifndef REALSENSE2_CAMERA_REALSENSE_NODE_H
+#define REALSENSE2_CAMERA_REALSENSE_NODE_H
 
-#include <image_transport/image_transport.h>
-#include <ros/ros.h>
-#include <ros/package.h>
+#include <csignal>
+#include <fstream>
+#include <atomic>
+#include <mutex>
+
+#include <eigen3/Eigen/Geometry>
+
 #include <librealsense2/rs.hpp>
 #include <librealsense2/rsutil.h>
 #include <librealsense2/hpp/rs_processing.hpp>
 #include <librealsense2/rs_advanced_mode.hpp>
-#include <dynamic_reconfigure/server.h>
-#include <realsense2_camera/base_d400_paramsConfig.h>
-#include <realsense2_camera/rs415_paramsConfig.h>
-#include <realsense2_camera/rs435_paramsConfig.h>
+
 #include <realsense2_camera/constants.h>
+#include <realsense2_camera/Extrinsics.h>
+#include <realsense2_camera/IMUInfo.h>
+#include <realsense2_camera/realsense_node.h>
+
+#include <ros/ros.h>
+#include <ros/package.h>
+#include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
-#include <realsense2_camera/Extrinsics.h>
+#include <sensor_msgs/Imu.h>
+#include <std_srvs/SetBool.h>
+
 #include <tf/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
-#include <sensor_msgs/Imu.h>
-#include <realsense2_camera/IMUInfo.h>
-#include <realsense2_camera/realsense_node.h>
-#include <csignal>
-#include <eigen3/Eigen/Geometry>
-#include <fstream>
 
-#include <std_srvs/SetBool.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 #include <diagnostic_updater/update_functions.h>
-#include <atomic>
-#include <mutex>
 
 namespace realsense2_camera
 {
-  class RealSenseParamManager;
 
-    enum base_depth_param{
-        base_depth_gain = 1,
-        base_depth_enable_auto_exposure,
-        base_depth_visual_preset,
-        base_depth_frames_queue_size,
-        base_depth_error_polling_enabled,
-        base_depth_output_trigger_enabled,
-        base_depth_units,
-        base_JSON_file_path,
-        base_enable_depth_to_disparity_filter,
-        base_enable_spatial_filter,
-        base_enable_temporal_filter,
-        base_enable_disparity_to_depth_filter,
-        base_spatial_filter_magnitude,
-        base_spatial_filter_smooth_alpha,
-        base_spatial_filter_smooth_delta,
-        base_spatial_filter_holes_fill,
-        base_temporal_filter_smooth_alpha,
-        base_temporal_filter_smooth_delta,
-        base_temporal_filter_holes_fill,
-        base_depth_count
-    };
+class RealSenseParamManagerBase;
+template<uint16_t Model>
+class RealSenseParamManager;
 
     enum filters{
         DEPTH_TO_DISPARITY,
@@ -266,7 +248,7 @@ namespace realsense2_camera
         int temperature_;
         ros::Timer depth_callback_timer_;
         ros::Duration depth_callback_timeout_;
-        std::unique_ptr<RealSenseParamManager> _params;
+        std::unique_ptr<RealSenseParamManagerBase> _params;
 
         const std::vector<std::vector<stream_index_pair>> IMAGE_STREAMS = {{{DEPTH, INFRA1, INFRA2},
                                                                             {COLOR},
@@ -274,31 +256,10 @@ namespace realsense2_camera
 
         const std::vector<std::vector<stream_index_pair>> HID_STREAMS = {{GYRO, ACCEL}};
 
-        friend class SR300ParamManager;
-        friend class RS415ParamManager;
-        friend class RS435ParamManager;
-        friend class D400ParamManager;
-    };//end class
+        template <uint16_t Model>
+        friend class RealSenseParamManager;
 
+    };  // end class
+}  // namespace realsense2_camera
 
-    class RealSenseParamManager {
-    public:
-        virtual ~RealSenseParamManager() {};
-        virtual void registerDynamicReconfigCb(RealSenseNode *node_ptr) = 0;
-    };
-
-
-    class D400ParamManager : public RealSenseParamManager
-    {
-    public:
-        virtual void registerDynamicReconfigCb(RealSenseNode *node_ptr) override;
-
-    private:
-        void callback(RealSenseNode* node_ptr,base_d400_paramsConfig &config, uint32_t level);
-        void setOption(RealSenseNode *node_ptr, stream_index_pair sip, rs2_option opt, float val);
-        void setParam(RealSenseNode* node_ptr,base_d400_paramsConfig &config, base_depth_param param);
-
-        std::shared_ptr<dynamic_reconfigure::Server<base_d400_paramsConfig>> _server;
-        dynamic_reconfigure::Server<base_d400_paramsConfig>::CallbackType _f;
-    };
-}
+#endif  REALSENSE2_CAMERA_REALSENSE_NODE_H

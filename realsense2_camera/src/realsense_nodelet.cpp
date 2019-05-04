@@ -2,11 +2,9 @@
 // Copyright(c) 2017 Intel Corporation. All Rights Reserved
 
 #include <realsense2_camera/realsense_nodelet.h>
-#include <realsense2_camera/realsense_node.h>
-#include <iostream>
-#include <map>
+#include <realsense2_camera/param_manager.h>
 
-#include <boost/interprocess/sync/named_mutex.hpp>
+#include <pluginlib/class_list_macros.h>
 
 using namespace realsense2_camera;
 
