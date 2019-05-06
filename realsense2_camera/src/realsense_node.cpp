@@ -28,6 +28,7 @@ RealSenseNode::RealSenseNode(const ros::NodeHandle &nodeHandle,
     _intialize_time_base(false),
     _namespace(getNamespaceStr())
 {
+     getParameters();
      getDevice();
      createParamsManager();
 
@@ -198,7 +199,6 @@ void RealSenseNode::getDevice() {
 
 void RealSenseNode::publishTopics()
 {
-    getParameters();
     setupDevice();
     setHealthTimers();
     setupPublishers();
@@ -332,6 +332,7 @@ void RealSenseNode::getParameters()
     _pnh.param("aligned_depth_to_infra2_frame_id",  _depth_aligned_frame_id[INFRA2],  DEFAULT_ALIGNED_DEPTH_TO_INFRA2_FRAME_ID);
     _pnh.param("aligned_depth_to_fisheye_frame_id", _depth_aligned_frame_id[FISHEYE], DEFAULT_ALIGNED_DEPTH_TO_FISHEYE_FRAME_ID);
 
+    _pnh.param("serial_no", _serial_no, _serial_no);
     _pnh.param("rosbag_filename", _rosbag_filename, _rosbag_filename);
 
     double depth_callback_timeout = 30; // seconds
