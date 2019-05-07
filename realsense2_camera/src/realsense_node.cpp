@@ -1,4 +1,4 @@
-#include <realsense2_camera/realsense_node.h>
+﻿#include <realsense2_camera/realsense_node.h>
 #include <realsense2_camera/param_manager.h>
 #include <boost/interprocess/sync/named_mutex.hpp>
 
@@ -30,7 +30,6 @@ RealSenseNode::RealSenseNode(const ros::NodeHandle &nodeHandle,
 {
      getParameters();
      getDevice();
-     createParamsManager();
 
     // Types for depth stream
     _is_frame_arrived[DEPTH] = false;
@@ -106,7 +105,13 @@ RealSenseNode::RealSenseNode(const ros::NodeHandle &nodeHandle,
 
     _prev_camera_time_stamp = 0;
 
-    publishTopics();
+    setHealthTimers();
+
+    if (_dev)
+    {
+      createParamsManager();
+      publishTopics();
+    }
 }
 
 void RealSenseNode::createParamsManager() {
@@ -128,13 +133,14 @@ void RealSenseNode::createParamsManager() {
 }
 
 void RealSenseNode::resetNode() {
-    auto& nh = _node_handle;
-    auto& pnh = _pnh;
+    auto nh = _node_handle;
+    auto pnh = _pnh;
     this->~RealSenseNode();
     new (this) RealSenseNode(nh, pnh);
 }
 
 void RealSenseNode::getDevice() {
+
     if (!_rosbag_filename.empty())
     {
         ROS_INFO_STREAM("publish topics from rosbag file: " << _rosbag_filename.c_str());
@@ -155,9 +161,8 @@ void RealSenseNode::getDevice() {
         usb_mutex.unlock();
         if (0 == list.size())
         {
-            ROS_ERROR("No RealSense devices were found! Terminating RealSense Node...");
-            ros::shutdown();
-            exit(1);
+            ROS_ERROR("No RealSense devices were found!.");
+            return;
         }
 
         bool found = false;
@@ -183,8 +188,7 @@ void RealSenseNode::getDevice() {
         if (!found)
         {
             ROS_ERROR_STREAM("The requested device with serial number " << _serial_no << " is NOT found!");
-            ros::Duration(20).sleep();
-            resetNode();
+            return;
         }
 
         _ctx.set_devices_changed_callback([this](rs2::event_information& info)
@@ -200,17 +204,15 @@ void RealSenseNode::getDevice() {
 void RealSenseNode::publishTopics()
 {
     setupDevice();
-    setHealthTimers();
     setupPublishers();
     setupServices();
     setupStreams();
     publishStaticTransforms();
-    ROS_INFO_STREAM("RealSense Node Is Up!");
-
     if (_params)
     {
       _params->registerDynamicReconfigCb(this);
     }
+    ROS_INFO_STREAM("RealSense Node Is Up!");
 }
 
 
@@ -253,6 +255,7 @@ bool RealSenseNode::enableStreams(std_srvs::SetBool::Request& req, std_srvs::Set
                     res.message += std::string("Failed to stop stream:  ") + e.what() + '\n';
                     res.success = false;
                 }
+                depth_callback_timer_.stop();
             }
         }
     }
@@ -278,6 +281,7 @@ void RealSenseNode::getParameters()
     _pnh.param("depth_width", _width[DEPTH], DEPTH_WIDTH);
     _pnh.param("depth_height", _height[DEPTH], DEPTH_HEIGHT);
     _pnh.param("depth_fps", _fps[DEPTH], DEPTH_FPS);
+
     _pnh.param("enable_depth", _enable[DEPTH], ENABLE_DEPTH);
     _aligned_depth_images[DEPTH].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
@@ -332,12 +336,13 @@ void RealSenseNode::getParameters()
     _pnh.param("aligned_depth_to_infra2_frame_id",  _depth_aligned_frame_id[INFRA2],  DEFAULT_ALIGNED_DEPTH_TO_INFRA2_FRAME_ID);
     _pnh.param("aligned_depth_to_fisheye_frame_id", _depth_aligned_frame_id[FISHEYE], DEFAULT_ALIGNED_DEPTH_TO_FISHEYE_FRAME_ID);
 
-    _pnh.param("serial_no", _serial_no, _serial_no);
     _pnh.param("rosbag_filename", _rosbag_filename, _rosbag_filename);
 
     double depth_callback_timeout = 30; // seconds
     _pnh.param("depth_callback_timeout", depth_callback_timeout, depth_callback_timeout);
     depth_callback_timeout_ = ros::Duration(depth_callback_timeout);
+
+    _pnh.param("serial_no", _serial_no, _serial_no);
 }
 
 void RealSenseNode::setupDevice()
@@ -1582,7 +1587,8 @@ void RealSenseNode::setHealthTimers() {
     ROS_WARN_STREAM("RealSense " << _serial_no << " driver timeout! Resetting");
     resetNode();
   };
-  depth_callback_timer_ = _node_handle.createTimer(depth_callback_timeout_, reset_this, false, false);
+  depth_callback_timer_ = _node_handle.createTimer(depth_callback_timeout_, reset_this, false, !_dev);
+
 }
 
 bool RealSenseNode::getEnabledProfile(const stream_index_pair& stream_index, rs2::stream_profile& profile)
