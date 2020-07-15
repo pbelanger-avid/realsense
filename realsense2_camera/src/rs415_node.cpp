@@ -122,8 +122,15 @@ void RS415Node::callback(rs415_paramsConfig &config, uint32_t level)
     {
         for (int i = 1 ; i < rs415_param_count ; ++i)
         {
-            ROS_DEBUG_STREAM("rs415_param = " << i);
-            setParam(config ,(rs415_param)i);
+            try
+            {
+                ROS_DEBUG_STREAM("rs415_param = " << i);
+                setParam(config, (rs415_param) i);
+            }
+            catch (rs2::error const &error)
+            {
+                ROS_ERROR("Setting RS415 parameter %d failed: %s", i, error.what());
+            }
         }
     }
     else

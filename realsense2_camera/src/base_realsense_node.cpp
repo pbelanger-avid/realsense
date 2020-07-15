@@ -1487,8 +1487,15 @@ void BaseD400Node::callback(base_d400_paramsConfig &config, uint32_t level)
     {
         for (int i = 1 ; i < base_depth_count ; ++i)
         {
-            ROS_DEBUG_STREAM("base_depth_param = " << i);
-            setParam(config ,(base_depth_param)i);
+            try
+            {
+                ROS_DEBUG_STREAM("base_depth_param = " << i);
+                setParam(config ,(base_depth_param)i);
+            }
+            catch(rs2::error const& error)
+            {
+                ROS_ERROR("Setting RS435 parameter %d failed: %s", i, error.what());
+            }
         }
     }
     else

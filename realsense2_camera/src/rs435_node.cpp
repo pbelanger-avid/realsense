@@ -114,8 +114,15 @@ void RS435Node::callback(rs435_paramsConfig &config, uint32_t level)
     {
         for (int i = 1 ; i < rs435_param_count ; ++i)
         {
-            ROS_DEBUG_STREAM("rs435_param = " << i);
-            setParam(config ,(rs435_param)i);
+            try
+            {
+                ROS_DEBUG_STREAM("rs435_param = " << i);
+                setParam(config ,(rs435_param)i);
+            }
+            catch (rs2::error const& error)
+            {
+                ROS_ERROR("Setting RS435 parameter %d failed: %s", i, error.what());
+            }
         }
     }
     else
