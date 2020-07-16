@@ -18,6 +18,10 @@
 
 namespace realsense2_camera
 {
+    // NB: If you add an entry here you must also ensuure the corresponding entry is added to the parameter list in
+    // cfg/base_d400_params.py.
+    // You must also remember to copy the new parameter field from the per-device settings object to the base settings
+    // object in both of the setParam overloads.
     enum base_depth_param{
         base_depth_gain = 1,
         base_depth_enable_auto_exposure,
@@ -38,8 +42,9 @@ namespace realsense2_camera
         base_temporal_filter_smooth_alpha,
         base_temporal_filter_smooth_delta,
         base_temporal_filter_holes_fill,
-        base_depth_count
+        base_param_count
     };
+
 
     enum filters{
         DEPTH_TO_DISPARITY,

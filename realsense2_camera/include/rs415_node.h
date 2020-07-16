@@ -9,7 +9,7 @@
 namespace realsense2_camera
 {
     enum rs415_param{
-        rs415_depth_enable_auto_white_balance = 20,
+        rs415_depth_enable_auto_white_balance = base_depth_param::base_param_count,
         rs415_depth_exposure,
         rs415_depth_laser_power,
         rs415_depth_emitter_enabled,

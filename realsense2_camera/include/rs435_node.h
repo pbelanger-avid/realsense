@@ -9,7 +9,7 @@
 namespace realsense2_camera
 {
     enum rs435_param{
-        rs435_depth_exposure = 20,
+        rs435_depth_exposure = base_depth_param::base_param_count,
         rs435_depth_laser_power,
         rs435_depth_emitter_enabled,
         rs435_color_backlight_compensation,
@@ -40,10 +40,11 @@ namespace realsense2_camera
         virtual void registerDynamicReconfigCb() override;
 
     private:
-            void callback(rs435_paramsConfig &config, uint32_t level);
-            void setParam(rs435_paramsConfig &config, rs435_param param);
+        void setParam(rs435_paramsConfig &config, rs435_param param);
+        void callback(rs435_paramsConfig &config, uint32_t level);
 
-            dynamic_reconfigure::Server<rs435_paramsConfig> _server;
-            dynamic_reconfigure::Server<rs435_paramsConfig>::CallbackType _f;
+
+        dynamic_reconfigure::Server<rs435_paramsConfig> _server;
+        dynamic_reconfigure::Server<rs435_paramsConfig>::CallbackType _f;
     };
 }

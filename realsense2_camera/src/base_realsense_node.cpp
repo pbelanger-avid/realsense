@@ -1485,7 +1485,7 @@ void BaseD400Node::callback(base_d400_paramsConfig &config, uint32_t level)
 
     if (set_default_dynamic_reconfig_values == level)
     {
-        for (int i = 1 ; i < base_depth_count ; ++i)
+        for (int i = 1 ; i < base_param_count ; ++i)
         {
             try
             {
@@ -1683,3 +1683,4 @@ filter_options::filter_options(filter_options&& other) :
     filter_name(std::move(other.filter_name)),
     filter(other.filter),
     is_enabled(other.is_enabled.load()) {}
+

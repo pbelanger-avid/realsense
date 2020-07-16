@@ -8,6 +8,8 @@
 
 namespace realsense2_camera
 {
+    // Note that since the sr300 is not a D400 series, it does not inherit the base d400 parameter set so the
+    // enum starts at 1.
     enum sr300_param{
         sr300_param_color_backlight_compensation = 1,
         sr300_param_color_brightness,
