@@ -1531,6 +1531,7 @@ void BaseD400Node::setParam(rs435_paramsConfig &config, base_depth_param param)
     base_config.base_temporal_filter_smooth_alpha = config.rs435_temporal_filter_smooth_alpha;
     base_config.base_temporal_filter_smooth_delta = config.rs435_temporal_filter_smooth_delta;
     base_config.base_temporal_filter_holes_fill = config.rs435_temporal_filter_holes_fill;
+    base_config.base_auto_exposure_mean_intensity_setpoint = config.rs435_auto_exposure_mean_intensity_setpoint;
     setParam(base_config, param);
 }
 
@@ -1556,6 +1557,7 @@ void BaseD400Node::setParam(rs415_paramsConfig &config, base_depth_param param)
     base_config.base_temporal_filter_smooth_alpha = config.rs415_temporal_filter_smooth_alpha;
     base_config.base_temporal_filter_smooth_delta = config.rs415_temporal_filter_smooth_delta;
     base_config.base_temporal_filter_holes_fill = config.rs415_temporal_filter_holes_fill;
+    base_config.base_auto_exposure_mean_intensity_setpoint = config.rs415_auto_exposure_mean_intensity_setpoint;
     setParam(base_config, param);
 }
 
@@ -1658,10 +1660,48 @@ void BaseD400Node::setParam(base_d400_paramsConfig &config, base_depth_param par
         ROS_DEBUG_STREAM("base_temporal_filter_holes_fill: " << config.base_temporal_filter_holes_fill);
         filters[TEMPORAL].filter.set_option(RS2_OPTION_HOLES_FILL, config.base_temporal_filter_holes_fill);
         break;
+    case base_auto_exposure_mean_intensity_setpoint:
+        ROS_DEBUG_STREAM("base_auto_exposure_mean_intensity_setpoint: " << config.base_auto_exposure_mean_intensity_setpoint);
+        setDepthAutoExposureSetpoint(config.base_auto_exposure_mean_intensity_setpoint);
+        break;
     default:
         ROS_WARN_STREAM("Unrecognized D400 param (" << param << ")");
         break;
     }
+}
+
+void BaseD400Node::setDepthAutoExposureSetpoint(int value)
+{
+    // make sure we actually support the advanced mode (all D435 cameras should)
+    if(not _dev.is<rs400::advanced_mode>())
+    {
+        ROS_WARN_STREAM("Can not set depth AE setpoint: advanced mode not supported");
+        return;
+    }
+    auto advanced_dev = _dev.as<rs400::advanced_mode>();
+
+    // make sure advanced mode is enabled, otherwise these settings have no effect.
+    if(! advanced_dev.is_enabled())
+    {
+        advanced_dev.toggle_advanced_mode(true);
+    }
+
+    assert(advanced_dev.is_enabled());
+
+    // according to the samples in doc/rs400/rs400_advanced_mode.md, the get_ae_control mode parameter means:
+    // mode 0: current value
+    // mode 1: min value
+    // mode 2: max value
+    // If we try to get min/max for the ae_control then we end up having a rs2::error thrown with the unknown error
+    // code -6 (which may indicate posix error 6: ENXIO: no such device or resource)
+    // so we don't bother dynamically clamping the input value in this case and just do a basic >0 clamp.
+    if(value < 0) value = 0;  // prevent underflow on cast
+
+    // read/modify/write so that future library versions that add more fields to the AE control struct won't get
+    // them clobbered.
+    auto ae_settings = advanced_dev.get_ae_control();
+    ae_settings.meanIntensitySetPoint = static_cast<uint32_t>(value);
+    advanced_dev.set_ae_control(ae_settings);
 }
 
 void BaseD400Node::registerDynamicReconfigCb()

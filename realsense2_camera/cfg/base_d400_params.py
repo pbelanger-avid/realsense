@@ -70,5 +70,6 @@ def add_base_params(gen, prefix):
     add(prefix + "temporal_filter_smooth_alpha",            double_t, "Temporal Smooth Alpha",            0.4,    0.0,   1.0)
     add(prefix + "temporal_filter_smooth_delta",            double_t, "Temporal Smooth Delta",            20.0,   1.0,   100.0)
     add(prefix + "temporal_filter_holes_fill",              int_t,    "Temporal Filter Holes Fill",       3,      0,     6, edit_method=temporal_filter_holes_fill_enum)
+    add(prefix + "auto_exposure_mean_intensity_setpoint",   int_t,    "Auto Exposure Mean Intensity Setpoint", 1536, 0, 8000)
 
     return level[0]

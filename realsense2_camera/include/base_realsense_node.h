@@ -42,6 +42,7 @@ namespace realsense2_camera
         base_temporal_filter_smooth_alpha,
         base_temporal_filter_smooth_delta,
         base_temporal_filter_holes_fill,
+        base_auto_exposure_mean_intensity_setpoint,
         base_param_count
     };
 
@@ -263,6 +264,12 @@ namespace realsense2_camera
         void callback(base_d400_paramsConfig &config, uint32_t level);
         void setOption(stream_index_pair sip, rs2_option opt, float val);
         void setParam(base_d400_paramsConfig &config, base_depth_param param);
+
+        /**
+         * Set the "Auto Exposure Mean Set Point" value for this device.
+         * @param value The value to apply.
+         */
+        void setDepthAutoExposureSetpoint(int value);
 
         std::shared_ptr<dynamic_reconfigure::Server<base_d400_paramsConfig>> _server;
         dynamic_reconfigure::Server<base_d400_paramsConfig>::CallbackType _f;
