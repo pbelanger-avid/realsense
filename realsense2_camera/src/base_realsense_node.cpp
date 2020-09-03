@@ -5,6 +5,7 @@
 #include <realsense2_camera_new/JsonConfigResponse.h>
 
 using namespace realsense2_camera_new;
+using namespace realsense2_camera;
 
 std::string BaseRealSenseNode::getNamespaceStr()
 {
