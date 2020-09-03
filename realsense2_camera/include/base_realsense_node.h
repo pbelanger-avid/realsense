@@ -5,10 +5,10 @@
 
 #include "../include/realsense_node_factory.h"
 #include <dynamic_reconfigure/server.h>
-#include <realsense2_camera/base_d400_paramsConfig.h>
-#include <realsense2_camera/rs415_paramsConfig.h>
-#include <realsense2_camera/rs435_paramsConfig.h>
-#include <realsense2_camera/JsonConfig.h>
+#include <realsense2_camera_new/base_d400_paramsConfig.h>
+#include <realsense2_camera_new/rs415_paramsConfig.h>
+#include <realsense2_camera_new/rs435_paramsConfig.h>
+#include <realsense2_camera_new/JsonConfig.h>
 #include <std_srvs/SetBool.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 #include <diagnostic_updater/update_functions.h>
