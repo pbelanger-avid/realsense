@@ -134,7 +134,7 @@ namespace realsense2_camera
         static std::string getNamespaceStr();
         void getParameters();
         bool enableStreams(std_srvs::SetBool::Request  &req, std_srvs::SetBool::Response &res);
-        bool JsonConfigCallback(JsonConfig::RequestType &request, realsense2_camera::JsonConfig::ResponseType &response);
+        bool JsonConfigCallback(realsense2_camera_new::JsonConfig::RequestType &request, realsense2_camera_new::JsonConfig::ResponseType &response);
         void setupDevice();
         void setupPublishers();
         void setupServices();

@@ -1,10 +1,10 @@
 #include "../include/base_realsense_node.h"
 #include "../include/sr300_node.h"
 #include <librealsense2/hpp/rs_serializable_device.hpp>
-#include <realsense2_camera/JsonConfigRequest.h>
-#include <realsense2_camera/JsonConfigResponse.h>
+#include <realsense2_camera_new/JsonConfigRequest.h>
+#include <realsense2_camera_new/JsonConfigResponse.h>
 
-using namespace realsense2_camera;
+using namespace realsense2_camera_new;
 
 std::string BaseRealSenseNode::getNamespaceStr()
 {
